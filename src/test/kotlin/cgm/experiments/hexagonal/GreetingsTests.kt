@@ -32,10 +32,19 @@ object GreeterService {
         val personsRepository = CsvPersonRepository(csvSource)
 
         val allPersons = personsRepository.listAll()
-        val greetPersons = BirthdayGreetings.greetPersons(allPersons, today)
-        val greetingList = greetPersons.map { it.value }
+        val greetingsMessages = BirthdayGreetings.greetPersons(allPersons, today)
+
+        val greetingList = mutableListOf<String>()
+        StringSendService(greetingList).send(greetingsMessages)
 
         return greetingList
+    }
+
+}
+
+class StringSendService(private val greetingList: MutableList<String>) {
+    fun send(greetingsMessages: List<BirthdayMessage>) {
+        greetingsMessages.forEach { greetingList.add(it.value) }
     }
 
 }

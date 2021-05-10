@@ -7,12 +7,10 @@ import java.time.LocalDate
 
 class GreetingsService(
     private val personsRepository: PersonRepository,
-    private val sendService: SendService
-) {
+    private val sendService: SendService) {
 
-    fun sendGreetings(today: LocalDate) {
-        val allPersons = personsRepository.listAll()
-        val greetingsMessages = BirthdayGreetings.greetPersons(allPersons, today)
-        sendService.send(greetingsMessages)
-    }
+    fun sendGreetings(today: LocalDate): Unit = personsRepository
+        .listAll()
+        .run { BirthdayGreetings.greetPersons(this, today) }
+        .run(sendService::send)
 }

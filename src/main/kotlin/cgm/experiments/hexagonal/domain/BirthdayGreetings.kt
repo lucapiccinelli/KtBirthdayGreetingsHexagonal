@@ -6,7 +6,8 @@ import java.time.LocalDate
 
 object BirthdayGreetings {
     fun greetPersons(allPersons: List<Person>, today: LocalDate): List<BirthdayMessage> =
-        allPersons
+        allPersons.asSequence()
             .filter { person -> person.isBirthday(today) }
             .map { person -> BirthdayMessageTemplate.birthdayMessage(person) }
+            .toList()
 }

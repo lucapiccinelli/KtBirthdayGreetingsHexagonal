@@ -13,7 +13,6 @@ object GreeterService {
 
         GreetingsService(personsRepository, sendService).sendGreetings(today)
 
-
         return greetingList
     }
 

@@ -30,31 +30,32 @@ class GreetingsTests {
 object GreeterService {
     fun greet(csvSource: String, today: LocalDate = LocalDate.now()): List<String> {
         val personsRepository = CsvPersonRepository(csvSource)
-        val allPersons: List<Person> = personsRepository.listAll()
 
-        val allBirthdays: List<Person> = findBirthdays(allPersons, today)
+        val allPersons = personsRepository.listAll()
+        val greetPersons = BirthdayGreetings.greetPersons(allPersons, today)
+        val greetingList = greetPersons.map { it.value }
 
-        return sendMessages(allBirthdays)
+        return greetingList
     }
 
-    private fun sendMessages(allBirthdays: List<Person>) =
-        allBirthdays.map { person -> birtdayMessage(person) }
-
-    private fun findBirthdays(
-        allPersons: List<Person>,
-        today: LocalDate
-    ) = allPersons.filter { person -> isBirthday(person, today) }
-
-    private fun birtdayMessage(person: Person) = """
-                    Subject: Happy birthday!
-        
-                    Happy birthday, dear ${person.name.firstName}!
-                """.trimIndent()
-
-    private fun isBirthday(person: Person, today: LocalDate) =
-        person.dateOfBirth.month == today.month && person.dateOfBirth.dayOfMonth == today.dayOfMonth
-
 }
+
+object BirthdayGreetings {
+    fun greetPersons(allPersons: List<Person>, today: LocalDate): List<BirthdayMessage> =
+        allPersons
+            .filter { person -> person.isBirthday(today) }
+            .map { person -> BirthdayMessageTemplate.birthdayMessage(person) }
+}
+
+object BirthdayMessageTemplate {
+    fun birthdayMessage(person: Person): BirthdayMessage = BirthdayMessage("""
+            Subject: Happy birthday!
+    
+            Happy birthday, dear ${person.name.firstName}!
+        """.trimIndent())
+}
+
+data class BirthdayMessage(val value: String)
 
 class CsvPersonRepository(val csvSource: String) {
 
@@ -79,7 +80,11 @@ class CsvPersonRepository(val csvSource: String) {
 data class Person(
     val name: Name,
     val dateOfBirth: LocalDate,
-    val email: String)
+    val email: String){
+
+    fun isBirthday(today: LocalDate = LocalDate.now()) =
+        dateOfBirth.month == today.month && dateOfBirth.dayOfMonth == today.dayOfMonth
+}
 
 data class Name(
     val firstName: String,

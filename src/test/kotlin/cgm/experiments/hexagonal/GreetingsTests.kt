@@ -30,16 +30,26 @@ class GreetingsTests {
 object GreeterService {
     fun greet(csvSource: String, today: LocalDate = LocalDate.now()): List<String> {
         val personsRepository = CsvPersonRepository(csvSource)
-
-        val allPersons = personsRepository.listAll()
-        val greetingsMessages = BirthdayGreetings.greetPersons(allPersons, today)
-
         val greetingList = mutableListOf<String>()
-        StringSendService(greetingList).send(greetingsMessages)
+        val sendService = StringSendService(greetingList)
+
+        GreetingsService(personsRepository, sendService).sendGreetings(today)
+
 
         return greetingList
     }
 
+}
+
+class GreetingsService(
+    private val personsRepository: CsvPersonRepository,
+    private val sendService: StringSendService) {
+
+    fun sendGreetings(today: LocalDate) {
+        val allPersons = personsRepository.listAll()
+        val greetingsMessages = BirthdayGreetings.greetPersons(allPersons, today)
+        sendService.send(greetingsMessages)
+    }
 }
 
 class StringSendService(private val greetingList: MutableList<String>) {

@@ -29,9 +29,10 @@ class GreetingsTests {
 
 object GreeterService {
     fun greet(csvSource: String, today: LocalDate = LocalDate.now()): List<String> {
-        val allPersons = listAllPersons(csvSource)
+        val personsRepository = CsvPersonRepository(csvSource)
+        val allPersons: List<Person> = personsRepository.listAll()
 
-        val allBirthdays = findBirthdays(allPersons, today)
+        val allBirthdays: List<Person> = findBirthdays(allPersons, today)
 
         return sendMessages(allBirthdays)
     }
@@ -44,19 +45,25 @@ object GreeterService {
         today: LocalDate
     ) = allPersons.filter { person -> isBirthday(person, today) }
 
-    private fun listAllPersons(csvSource: String): List<Person> {
-        val csvFormat = CSVFormat.EXCEL.withDelimiter(',').withHeader()
-        val csv = CSVParser.parse(csvSource, csvFormat)
-
-        val allPersons = csv.map { csvRecord -> csvToPerson(csvRecord) }
-        return allPersons
-    }
-
     private fun birtdayMessage(person: Person) = """
                     Subject: Happy birthday!
         
                     Happy birthday, dear ${person.name.firstName}!
                 """.trimIndent()
+
+    private fun isBirthday(person: Person, today: LocalDate) =
+        person.dateOfBirth.month == today.month && person.dateOfBirth.dayOfMonth == today.dayOfMonth
+
+}
+
+class CsvPersonRepository(val csvSource: String) {
+
+    fun listAll(): List<Person> {
+        val csvFormat = CSVFormat.EXCEL.withDelimiter(',').withHeader()
+        val csv = CSVParser.parse(csvSource, csvFormat)
+
+        return csv.map { csvRecord -> csvToPerson(csvRecord) }
+    }
 
     private fun csvToPerson(csvRecord: CSVRecord): Person {
         val firstName = csvRecord[1].trim()
@@ -66,9 +73,6 @@ object GreeterService {
 
         return Person(Name(firstName, lastName), dateOfBirth, email)
     }
-
-    private fun isBirthday(person: Person, today: LocalDate) =
-        person.dateOfBirth.month == today.month && person.dateOfBirth.dayOfMonth == today.dayOfMonth
 
 }
 

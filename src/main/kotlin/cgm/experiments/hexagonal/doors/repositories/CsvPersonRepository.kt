@@ -1,5 +1,6 @@
 package cgm.experiments.hexagonal.doors.repositories
 
+import cgm.experiments.hexagonal.domain.doors.PersonRepository
 import cgm.experiments.hexagonal.domain.model.Name
 import cgm.experiments.hexagonal.domain.model.Person
 import org.apache.commons.csv.CSVFormat
@@ -8,9 +9,9 @@ import org.apache.commons.csv.CSVRecord
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-class CsvPersonRepository(val csvSource: String) {
+class CsvPersonRepository(val csvSource: String) : PersonRepository {
 
-    fun listAll(): List<Person> {
+    override fun listAll(): List<Person> {
         val csvFormat = CSVFormat.EXCEL.withDelimiter(',').withHeader()
         val csv = CSVParser.parse(csvSource, csvFormat)
 
